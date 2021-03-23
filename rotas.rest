@@ -1,0 +1,32 @@
+GET http://localhost:3000/pesquisas
+
+###
+
+GET http://localhost:3000/pesquisas/pesquisaML
+
+###
+
+GET http://localhost:3000/pesquisas/6059d931c34d9c4034959f1a
+
+###
+
+POST http://localhost:3000/pesquisas
+Content-Type: application/json
+
+{
+    "nome": "inscrito0004",
+    "inscritoNoCanal": "Turma Irada2",
+    "descricao": "o menino da camisa amalela"
+}
+
+###
+DELETE http://localhost:3000/6059d931c34d9c4034959f1a
+
+###
+
+PATCH http://localhost:3000/pesquisas/6057dbd67460471cf0ed7503
+Content-Type: application/json
+
+{
+    "nome": "novo nome"
+}
