@@ -14,9 +14,12 @@ POST http://localhost:3000/pesquisas
 Content-Type: application/json
 
 {
-    "nome": "inscrito0004",
-    "inscritoNoCanal": "Turma Irada2",
-    "descricao": "o menino da camisa amalela"
+    "pesquisaFiltro": "q=raspberry",
+        "thumbnail": "req.body.resultados.thumbnail",
+        "title": "req.body.resultados.title",
+        "address_city_name": "req.body.resultados.address_city_name",
+        "price": "req.body.resultados.price",
+        "permalink": "req.body.resultados.permalink"
 }
 
 ###
