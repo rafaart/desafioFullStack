@@ -7,7 +7,7 @@ rotas.get('/pesquisaML', async (req, res) => {
     try{
         const {data} = await axios('https://api.mercadolibre.com/sites/MLB/search?q=celular')
         res.json(data)
-        console.log(data)
+        console.log(data.results[0].title)
 
     } catch (err){
         console.error(err)
@@ -29,13 +29,18 @@ rotas.get('/:id', pegarPesquisa, (req, res) => {
 })
 //colocar um
 rotas.post('/', async (req,res) => {
+    const {data} = await axios('https://api.mercadolibre.com/sites/MLB/search?q=celular')
     const pesquisa = new Pesquisa({
-        pesquisaFiltro: req.body.pesquisaFiltro,
-        thumbnail: req.body.thumbnail,
-        title: req.body.title,
-        address_city_name: req.body.address_city_name,
-        price: req.body.price,
-        permalink: req.body.permalink
+        pesquisaFiltro: data.results[0].title,
+        horarioPesquisa: req.body.horarioPesquisa,
+        resultados:[{
+            thumbnail: req.body.thumbnail,
+            title: req.body.title,
+            address_city_name: req.body.address_city_name,
+            price: req.body.price,
+            permalink: req.body.permalink
+        }]
+        
     })
     try{
         const novaPesquisa = await pesquisa.save()
