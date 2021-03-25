@@ -5,26 +5,36 @@ const pesquisaSchema = mongoose.Schema({
         type: String,
         require: true
     },
-    thumbnail:{
-        type: String,
-        require: true
+    horarioPesquisa:{
+        type: Date,
+        require: true,
+        default: Date.now
     },
-    title:{
-        type: String,
-        require: true
-    },
-    address_city_name: {
-        type: String,
-        require:true
-    },
-    price: {
-        type: String,
-        require:true
-    },
-    permalink: {
-        type: String,
-        require:true
-    },
+    resultados:    
+        [{
+            thumbnail:{
+                type: String,
+                require: true
+            },
+            title:{
+                type: String,
+                require: true
+            },
+            address_city_name: {
+                type: String,
+                require:true
+            },
+            price: {
+                type: String,
+                require:true
+            },
+            permalink: {
+                type: String,
+                require:true
+            }
+        }]
+    
+    
    
 })
 module.exports = mongoose.model('pesquisa', pesquisaSchema)
