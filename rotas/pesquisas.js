@@ -2,46 +2,97 @@ const express = require('express')
 const axios = require('axios')
 const rotas = express.Router()
 const Pesquisa = require('../modelos/pesquisa')
+const ObjectId = require('mongoose/lib/schema/objectid')
 
-rotas.get('/pesquisaML', async (req, res) => {
-    try{
-        const {data} = await axios('https://api.mercadolibre.com/sites/MLB/search?q=celular')
-        res.json(data)
-        console.log(data.results[0].title)
 
-    } catch (err){
-        console.error(err)
+//pegar da API do mercado livre
+rotas.get('/:Web/:filtro', pegarUmaPesquisa, async (req, res) => {
+
+    
+    if(res.pesquisa!=null){
+        console.log("pesquisa não voltou null")
+        console.log(res.pesquisa[0].id)
+    }else{
+        console.log("pesquisa voltou null")
     }
+
+        try{
+            if(req.params.Web != 'Buscape'){
+                const {data} = await axios(process.env.API_MLB_URL+req.params.filtro)
+                res.json(data)
+                console.log(req.params.filtro)
+            }else{
+                res.json('API do Buscapé indisponivel')
+            }
+
+        } catch (err){
+            console.error(err)
+        }
+
+    
+    
+    })
+/*
+rotas.get('/Buscape/:filtro', async (req, res) => {
+    
 })
+*/
 
 //pegar todos
 rotas.get('/', async (req, res) => {
+    let data = new Date()
     try{
         const pesquisa = await Pesquisa.find()
         res.json(pesquisa)
+        for(let result of pesquisa){
+            if(Number(result.horarioPesquisa)< Number(data)){
+                console.log("Desatualizado desde: "+result.horarioPesquisa + "horario atual: " + data)
+            }else{
+                console.log("atualizado desde: "+result.horarioPesquisa+ "horario atual: " + data)
+            }
+        }
+
     } catch (err){
         res.status(500).json({ message: err.message})
     }
 })
 //pegar um
 rotas.get('/:id', pegarPesquisa, (req, res) => {
-    res.json(res.pesquisa.nome)
+    let data = new Date()
+    if(Number(res.pesquisa.horarioPesquisa)< Number(data)){
+        console.log("Desatualizado desde: "+res.pesquisa.horarioPesquisa + "horario atual: " + data)
+    }else{
+        console.log("atualizado desde: "+res.pesquisa.horarioPesquisa+ "horario atual: " + data)
+    }
+    res.json(res.pesquisa)
 })
 //colocar um
-rotas.post('/', async (req,res) => {
-    const {data} = await axios('https://api.mercadolibre.com/sites/MLB/search?q=celular')
-    const pesquisa = new Pesquisa({
-        pesquisaFiltro: data.results[0].title,
-        horarioPesquisa: req.body.horarioPesquisa,
-        resultados:[{
-            thumbnail: req.body.thumbnail,
-            title: req.body.title,
-            address_city_name: req.body.address_city_name,
-            price: req.body.price,
-            permalink: req.body.permalink
-        }]
-        
-    })
+rotas.post('/:filtro', async (req,res) => {
+    const {data} = await axios(process.env.API_URL+req.params.filtro)
+    let pesquisa = new Pesquisa(
+        {
+            pesquisaFiltro: data.query,
+            resultados:[{
+                
+            }]
+            
+        }
+    )
+    
+    for(let result of data.results){
+        pesquisa.resultados.push(
+            {
+            thumbnail: result.thumbnail,
+                title: result.title,
+                address_city_name: result.address_city_name,
+                price: result.price,
+                permalink: result.permalink
+        }
+        )
+    }
+
+    console.log(pesquisa.resultados[1])
+    //console.log(data.results[30])
     try{
         const novaPesquisa = await pesquisa.save()
         res.status(201).json(novaPesquisa)
@@ -52,23 +103,9 @@ rotas.post('/', async (req,res) => {
 })
 //atualizar um
 rotas.patch('/:id', pegarPesquisa, async (req,res) => {
+    //se a pesquisa estiver desatualizada
     if(req.body.pesquisaFiltro != null){
-        res.pesquisa.pesquisaFiltro = req.body.pesquisaFiltro
-    }
-    if(req.body.thumbnail != null){
-        res.pesquisa.thumbnail = req.body.thumbnail
-    }
-    if(req.body.title != null){
-        res.pesquisa.title = req.body.title
-    }
-    if(req.body.address_city_name != null){
-        res.pesquisa.address_city_name = req.body.address_city_name
-    }
-    if(req.body.price != null){
-        res.pesquisa.price = req.body.price
-    }
-    if(req.body.permalink != null){
-        res.pesquisa.permalink = req.body.permalink
+
     }
     try{
         const pesquisaAtualizada = await res.pesquisa.save()
@@ -80,7 +117,8 @@ rotas.patch('/:id', pegarPesquisa, async (req,res) => {
 //deletar um
 rotas.delete('/:id', pegarPesquisa, async (req,res) => {
     try{
-        await res.pesquisa.remove()
+        await res.pesquisa.drop()
+
         res.json({message: "pesquisa deletada"})
     }catch (err) {
         res.status(500).json({message: err.message})
@@ -94,6 +132,22 @@ async function pegarPesquisa(req, res, next) {
         pesquisa = await Pesquisa.findById(req.params.id)
         if (pesquisa == null){
             return res.status(404).json({message: "pesquisa não foi encontrada"})
+        }
+    }catch (err) {
+        return res.status(500).json({message: err.message})
+    }
+    res.pesquisa = pesquisa
+    next()
+}
+
+async function pegarUmaPesquisa(req, res, next) {
+    let pesquisa
+    try{
+        pesquisa = await Pesquisa.find({"pesquisaFiltro": req.params.filtro})
+        if (pesquisa == null){
+            console.log("pesquisa voltou null")
+            return res.status(404).json({message: "pesquisa não foi encontrada"})
+            
         }
     }catch (err) {
         return res.status(500).json({message: err.message})

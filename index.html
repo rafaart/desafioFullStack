@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexartLabsSE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+      main {
+        padding-top: 20px;
+      }
+    </style>
+</head>
+<body>
+    <div class="row" >
+        <div class="col-sm-2">
+        <div id="dropWeb" class="dropdown">
+        <button id="bttnWeb" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" >Web
+        <span class="caret"></span></button>
+        <ul id="webList" class="dropdown-menu" >
+          <li><a class="dropdown-item" href="#">Todas</a></li>
+          <li><a class="dropdown-item" href="#">MercadoLivre</a></li>
+          <li><a class="dropdown-item" href="#">Buscape</a></li>
+        </ul>
+        </div>
+        </div>
+
+        <div class="col-sm-2">
+        <div id="dropCategorias" class="dropdown">
+        <button id="bttnCateg" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Categorias
+        <span ID="spanCateg" class="caret"></span></button>
+        
+        <ul id="categList" class="dropdown-menu" >
+          
+            <li><a class="dropdown-item" name="MLB5726" href="#">Geladeira</a></li>
+            <li><a class="dropdown-item" name="MLB1000" href="#">Tv</a></li>
+            <li><a class="dropdown-item" name="MLB1051" href="#">Celular</a></li>
+          
+        </ul>
+        </div>
+      </div>
+      <input type="search" id="txtsearch" gravity="center">
+      <button class="btn btn-primary" type="button" id="bttnsearch">Pesquisar</button>
+    </div>
+
+    <div id="console">
+      <p>
+        lista de pesquisas
+      </p>
+    </div>
+
+    <main></main>
+    
+
+    <script>
+
+      
+
+      
+
+      $('.dropdown-toggle').dropdown()
+      $('#webList li').on('click', function() {
+        $('#bttnWeb').html($(this).find('a').html())      
+      })
+
+      $('.dropdown-toggle').dropdown()
+      $('#categList li').on('click', function() {
+        $('#bttnCateg').html($(this).find('a').text())
+      })
+
+      $('#bttnsearch').on('click', function() {
+        apiBuff()
+      })
+
+          async function apiBuff() {
+            //celular="MLB1051" geladeira/eletrodomestico="MLB5726" tv="MLB1000"
+            let txtSearch = ''+ document.getElementById("txtsearch").value
+            let web = ''+ window.document.getElementById("bttnWeb").innerText
+            let listCategoria = ''+ window.document.getElementById("bttnCateg").innerText
+            let categoria = ''
+            let pesquisa = ''
+            $('a').each(function(){
+              if($(this).text() == listCategoria){
+                categoria = $(this).html($('name').val()).attr('name')
+              }
+            })
+            
+            if(categoria != ''){
+            pesquisa = `q=${txtSearch}&category=${categoria}`
+            }else{
+              pesquisa = `q=${txtSearch}`
+            }
+              //console.log(txtSearch)
+            try {
+              const response = await fetch(`http://localhost:3000/pesquisas/${web}/geladeira`)
+              const data = await response.json()
+              console.log(`data: ${data}`)
+              if(data== 'API do Buscapé indisponivel'){
+                document.querySelector('#console').innerHTML = `<h3>${data}</h3>`
+                document.querySelector('main').innerHTML = `<h3></h3>`
+              }else{
+                let dia = new Date()
+                if(data.paging.total>0){
+                show(data.results)
+                document.querySelector('#console').innerHTML = `<h3>ultima atualização: ${dia}</h3>`
+                }else{
+                  document.querySelector('#console').innerHTML = `<h2>nenhum resultado encontrado</h2>`
+                  
+                }
+                
+
+              }
+            } catch (error) {
+              console.log(error)
+            }
+            
+          }
+          //apiBuff()
+
+          function show(results) {
+            let output = ''
+            //class="img-fluid"
+            for( let result of results) {
+              output += 
+              `
+              <table class="table">
+                <tbody>
+                  <tr>
+                    <td><img src="${result.thumbnail}"  alt="quixote"></img></td>
+                    <td>
+                      <div>
+                        <h4>${result.title}</h4>
+                        <p>${result.address.city_name}</p>
+                        <p><strong>$ ${result.price}</strong></p>
+                        </div>
+                      </td>
+                    <td><button id="${result.permalink}" type="button" class="btn btn-primary" onclick="irNoSite(this.href)">ir no site</button></td>
+                  </tr>
+                  </tbody>  
+              </table>
+              `
+            }
+            document.querySelector('main').innerHTML = output
+          }
+        
+          function irNoSite(adress) {
+            
+            var url = event.srcElement.id
+            window.open(url)
+          }
+
+          
+    </script>
+</body>
+</html>

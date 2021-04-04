@@ -2,15 +2,15 @@ GET http://localhost:3000/pesquisas
 
 ###
 
-GET http://localhost:3000/pesquisas/pesquisaML
+GET http://localhost:3000/pesquisas/MercadoLivre
 
 ###
 
-GET http://localhost:3000/pesquisas/6059d931c34d9c4034959f1a
+GET http://localhost:3000/pesquisas/605d39ffd649ec48ec9d3bbf
 
 ###
 
-POST http://localhost:3000/pesquisas
+POST http://localhost:3000/pesquisas/q=arduino
 Content-Type: application/json
 
 {
@@ -23,7 +23,7 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:3000/6059d931c34d9c4034959f1a
+DELETE http://localhost:3000/605ceb457bb3d00924660e4e
 
 ###
 
