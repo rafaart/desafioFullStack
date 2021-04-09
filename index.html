@@ -47,9 +47,15 @@
     </div>
 
     <div id="console">
-      <p>
-        lista de pesquisas
-      </p>
+      <div class="col-sm-10">
+        <p>
+          lista de pesquisas
+        </p>
+      </div>
+      <div class="col-sm-2">
+        <button class="btn btn-primary" type="button" id="bttnUpdate">Atualizar</button>
+      </div>
+      
     </div>
 
     <main></main>
@@ -75,8 +81,56 @@
         apiBuff()
       })
 
-          async function apiBuff() {
-            //celular="MLB1051" geladeira/eletrodomestico="MLB5726" tv="MLB1000"
+      $('#bttnUpdate').on('click', function() {
+        dbUpdate()
+      })
+
+      async function apiBuff() {
+
+      let txtSearch = ''+ document.getElementById("txtsearch").value
+      let web = ''+ window.document.getElementById("bttnWeb").innerText
+      let listCategoria = ''+ window.document.getElementById("bttnCateg").innerText
+      let categoria = ''
+      let pesquisa = ''
+      $('a').each(function(){
+        if($(this).text() == listCategoria){
+          categoria = $(this).html($('name').val()).attr('name')
+        }
+      })
+
+      if(categoria != ''){
+      pesquisa = `${txtSearch}&category=${categoria}`
+      }else{
+        pesquisa = txtSearch
+      }
+
+      try {
+        const response = await fetch(`http://localhost:3000/pesquisas/${web}/${pesquisa}`)
+        const data = await response.json()
+        console.log(data)
+
+        if(data== 'API do Buscapé indisponivel'){
+          document.querySelector('main').innerHTML = `<h3>${data}</h3>`
+        }else{
+
+          if(data.results.length>0){
+          document.querySelector('.col-sm-10').innerHTML = `<h3>ultima atualização: ${data.horarioPesquisa}</h3>`
+          show(data.results)
+          }else{
+            document.querySelector('.col-sm-10').innerHTML = `<h2>nenhum resultado encontrado</h2>`
+            
+          }
+          
+
+        }
+      } catch (error) {
+        console.log(error)
+      }
+
+      }
+
+          async function dbUpdate() {
+
             let txtSearch = ''+ document.getElementById("txtsearch").value
             let web = ''+ window.document.getElementById("bttnWeb").innerText
             let listCategoria = ''+ window.document.getElementById("bttnCateg").innerText
@@ -89,25 +143,31 @@
             })
             
             if(categoria != ''){
-            pesquisa = `q=${txtSearch}&category=${categoria}`
+            pesquisa = `${txtSearch}&category=${categoria}`
             }else{
-              pesquisa = `q=${txtSearch}`
+              pesquisa = txtSearch
             }
-              //console.log(txtSearch)
+
             try {
-              const response = await fetch(`http://localhost:3000/pesquisas/${web}/geladeira`)
+              const response = await fetch(`http://localhost:3000/pesquisas/atualizar/${web}/${pesquisa}`, {
+                method: "PATCH",
+                headers: {
+                "Content-type": "application/json",
+                "accept": "application/json"
+                }
+              })
               const data = await response.json()
-              console.log(`data: ${data}`)
+              console.log(data)
+
               if(data== 'API do Buscapé indisponivel'){
-                document.querySelector('#console').innerHTML = `<h3>${data}</h3>`
-                document.querySelector('main').innerHTML = `<h3></h3>`
+                document.querySelector('main').innerHTML = `<h3>${data}</h3>`
               }else{
-                let dia = new Date()
-                if(data.paging.total>0){
+
+                if(data.results.length>0){
+                document.querySelector('.col-sm-10').innerHTML = `<h3>ultima atualização: ${data.horarioPesquisa}</h3>`
                 show(data.results)
-                document.querySelector('#console').innerHTML = `<h3>ultima atualização: ${dia}</h3>`
                 }else{
-                  document.querySelector('#console').innerHTML = `<h2>nenhum resultado encontrado</h2>`
+                  document.querySelector('.col-sm-10').innerHTML = `<h2>nenhum resultado encontrado</h2>`
                   
                 }
                 
@@ -118,7 +178,7 @@
             }
             
           }
-          //apiBuff()
+
 
           function show(results) {
             let output = ''
@@ -133,7 +193,7 @@
                     <td>
                       <div>
                         <h4>${result.title}</h4>
-                        <p>${result.address.city_name}</p>
+                        <p>${result.title}</p>
                         <p><strong>$ ${result.price}</strong></p>
                         </div>
                       </td>

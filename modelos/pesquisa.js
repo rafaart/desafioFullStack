@@ -10,7 +10,7 @@ const pesquisaSchema = mongoose.Schema({
         require: true,
         default: Date.now
     },
-    resultados:    
+    results:    
         [{
             thumbnail:{
                 type: String,
@@ -22,7 +22,7 @@ const pesquisaSchema = mongoose.Schema({
             },
             address_city_name: {
                 type: String,
-                require:true
+                require: false
             },
             price: {
                 type: String,
